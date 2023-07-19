@@ -9,3 +9,4 @@ import { PokemonModule } from 'src/pokemon/pokemon.module';
   imports:[PokemonModule]
 })
 export class SeedModule {}
+ 

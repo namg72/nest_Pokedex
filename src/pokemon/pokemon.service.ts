@@ -4,15 +4,22 @@ import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { Pokemon } from './entities/pokemon.entity';
 import { Model, isValidObjectId } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PokemonService {
 
 
+ private defaultLimit : number
+
   constructor(
       @InjectModel(Pokemon.name)
-      private readonly pokemonModel: Model<Pokemon>
-  ){}
+      private readonly pokemonModel: Model<Pokemon>,
+      private readonly configSerice: ConfigService ){
+
+        this.defaultLimit = configSerice.get('defaultLimit')
+      }
 
 
   //Creando Pokemon
@@ -34,17 +41,24 @@ export class PokemonService {
 
 
 
-  //Listando todos los PôKemon
-  findAll() {
+  //Listando todos los PôKemon. 
+  findAll(paginationDto: PaginationDto) {
 
-    const pokemonList= this.pokemonModel.find()
+   //estrameos los valores del paginatioDto que nos llega y si no llegada nada le damos un valor por defecto
 
-    if(!pokemonList){
-      return  "There arn't pokemon in bd"
-    }else{
+      const {limit= this.defaultLimit, offset=0} = paginationDto
 
-      return pokemonList;
-    }
+
+      //ahora usamos estos valores para establercer el limite de podemon, salto de paginas y tambien los ordenamos por su numero y con select le podemos
+      // restar lo que no queramos que nos aparezca
+      
+      return this.pokemonModel.find()
+        .limit(limit)
+        .skip(offset)
+        .sort({
+          no:1
+        })
+        .select("-__v")
 
   }
 
